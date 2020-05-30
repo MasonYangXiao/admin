@@ -1,9 +1,10 @@
 # admin
-后台精简通用模板脚手架
+后台精简通用模板脚手架security+thymeleaf+hazelcast+jpa权限管理后台
 
-spring boot 2.25
+如果你需要一个前后端不分离的后台管理系统. 不想安装跟配置太多的东西.只需要增删改查这些功能. 这个就很精简.
 
-前端 thymeleaf
-权限 security
-缓存 hazelcast
+只实现了基础的用户/菜单/角色/权限功能，可以直接基于此项目开发自己的业务管理平台。
 
+使用hazelcast作为缓存无需安装redis
+
+感谢jonsychen 这是基于他的后台通用模板升级的.因为他的仓库不更新了.我做了一些升级和修补了一些bug

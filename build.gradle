@@ -1,0 +1,70 @@
+//声明gradle脚本自身需要使用的资源,优先执行
+buildscript {
+    repositories {
+        // 本地maven仓库
+        mavenLocal()
+        maven { url = 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        //和maven中央仓库一样的另一个依赖管理仓库,主要是java
+        jcenter()
+    }
+}
+
+plugins {
+	id 'org.springframework.boot' version '2.2.5.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+}
+
+group = 'com.admin'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	developmentOnly
+	runtimeClasspath {
+		extendsFrom developmentOnly
+	}
+}
+ext {
+  set('springCloudAlibabaVersion', "2.2.1.RELEASE")
+}
+
+repositories {
+    mavenLocal()
+	maven { url  "http://maven.aliyun.com/nexus/content/groups/public" }
+	mavenCentral()
+	
+}
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.session:spring-session-hazelcast'
+	implementation 'com.alibaba:fastjson:1.2.68'
+	implementation 'com.alibaba:druid:1.1.22'
+	implementation 'org.apache.commons:commons-lang3:3.10'
+	implementation 'commons-codec:commons-codec:1.14'
+	implementation 'com.google.guava:guava:28.2-jre'
+ 	//implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+    //implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+ 	runtimeOnly 'mysql:mysql-connector-java'
+ 	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testImplementation 'org.springframework.security:spring-security-test'
+}
+dependencyManagement {
+  imports {
+    mavenBom "com.alibaba.cloud:spring-cloud-alibaba-dependencies:${springCloudAlibabaVersion}"
+  }
+}
+test {
+	useJUnitPlatform()
+}

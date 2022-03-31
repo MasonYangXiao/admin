@@ -12,7 +12,10 @@ public enum ErrorCode {
 	OK("0", "成功"),
 	ERROR("500", "服务器错误"),
 	PARAMTER_ERROR("501", "参数错误"),
-	REQUEST_ERROR("501", "请求失败")
+	REQUEST_ERROR("502", "请求失败"), 
+	CLEAR_SUCCESS("1", "清除成功"),
+	FIND_NOT("513", "查询结果不存在"), 
+	PASSWORD_ERROR("514", "密码错误"), 
 	;
 	
 	

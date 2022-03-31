@@ -1,15 +1,22 @@
 package com.admin.common.response;
 
 
+
+
 import java.util.List;
 
 import lombok.Data;
 
+
 @Data
-public class DatatablesViewPage<T> {
-    private List<T> data; //aaData 与datatales 加载的“dataSrc"对应
-    private int recordsTotal; //总数
-    private int recordsFiltered;//查询总数
-    private int draw;//多少条
+public class DatatablesViewPage<T>  {
+	 // 状态码
+    private Integer code;
+    // 业务提示语
+    private String msg;
+    // 数据对象
+    private List<T> data;
+    
+    private long count; //总数
   
 }

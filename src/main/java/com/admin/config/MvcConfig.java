@@ -5,7 +5,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-import com.admin.interfaces.intercept.NavMenuActiveInterceptor;
 
 
 /**
@@ -27,7 +26,7 @@ public class MvcConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new NavMenuActiveInterceptor());
+       // registry.addInterceptor(new NavMenuActiveInterceptor());
         
     }
     @Override

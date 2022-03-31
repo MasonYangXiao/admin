@@ -16,8 +16,8 @@ management:
 spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/admin?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
-    username: root
-    password: 123
+    username: test
+    password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
@@ -33,13 +33,24 @@ spring:
   cache:
     guava:
       spec: maximumSize=500,expireAfterAccess=3600s
+  jpa:
+    database: MYSQL
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      use-new-id-generator-mappings: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: true
   thymeleaf:
     cache: false
     encoding: UTF-8
     servlet:
       content-type: text/html
     mode: LEGACYHTML5 # 用非严格的 HTML
-
+captcha:
+  enable: false
 page:
     host : 127.0.0.1:8080  #配置nginx后需要填写的前缀
     https:

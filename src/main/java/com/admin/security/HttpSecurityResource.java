@@ -9,14 +9,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.CollectionUtils;
 
-import com.admin.domain.modle.Resource;
-import com.admin.domain.modle.Role;
-import com.admin.domain.repository.ResourceRepository;
-import com.admin.domain.repository.RoleRepository;
+import com.admin.entity.Role;
+import com.admin.entity.SysResource;
+import com.admin.repository.RoleRepository;
+import com.admin.repository.SysResourceRepository;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.transaction.Transactional;
 
 /**
  * 定义受保护的http资源
@@ -30,22 +33,23 @@ public class HttpSecurityResource implements FilterInvocationSecurityMetadataSou
     protected RoleRepository roleRepository;
 
     @Autowired
-    protected ResourceRepository resourceRepository;
+    protected SysResourceRepository sysResourceRepository;
 
     private AntPathMatcher pathMatcher=new AntPathMatcher();
 
     //访问某个资源object需要什么角色
     @Override
+    @Transactional
     public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
         Collection<ConfigAttribute> attributes=new HashSet<>();
         FilterInvocation invocation=(FilterInvocation)object;//对于http资源来说，object是FilterInvocation
-        List<Role> roles=roleRepository.list();
+        List<Role> roles=roleRepository.findAll();
         if(CollectionUtils.isEmpty(roles)){
             return new HashSet<>();
         }
         String requestUrl=invocation.getRequestUrl();
-        roles.stream().forEach(role -> {
-            List<Resource> resources=resourceRepository.listByRole(role.getId());
+            roles.stream().forEach(role -> {
+            Set<SysResource> resources = role.getSysResource();
             if(CollectionUtils.isEmpty(resources)){
                 return;
             }
@@ -63,7 +67,7 @@ public class HttpSecurityResource implements FilterInvocationSecurityMetadataSou
 
     @Override
     public Collection<ConfigAttribute> getAllConfigAttributes() {
-        List<Role> allHttpResources=roleRepository.list();
+        List<Role> allHttpResources=roleRepository.findAll();
         Collection<ConfigAttribute> attributes=new HashSet<>();
         allHttpResources.stream().forEach(role -> {
             attributes.add(new SecurityConfig(role.getName()));

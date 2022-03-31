@@ -1,105 +1,183 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <div th:replace="head"></div>
-    <!-- DataTables -->
-    <link rel="stylesheet" href="../plugins/datatables/dataTables.bootstrap.css"/>
-    <title>菜单管理</title>
+    <meta charset="UTF-8">
+    <title>menu</title>
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+    <style>
+        .layui-btn:not(.layui-btn-lg ):not(.layui-btn-sm):not(.layui-btn-xs) {
+            height: 34px;
+            line-height: 34px;
+            padding: 0 8px;
+        }
+    </style>
 </head>
-
-<body class="hold-transition skin-blue sidebar-mini ">
-<div class="wrapper">
-
-    <div th:replace="header"></div>
-    <div th:replace="sidebar"></div>
-
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-
-
-        <!-- Main content -->
-        <section class="content">
-            <div class="row">
-                <div class="col-xs-12">
-
-                    <div class="box">
-                        <div class="box-header">
-                            <a th:href="@{/menu/form}" title="新增一级菜单"><span class="glyphicon glyphicon-plus"></span></a>
-                        </div>
-
-                        <div class="box-body">
-                            <table id="dataTable" class="table table-bordered table-striped">
-                                <thead>
-                                <tr>
-                                    <th>id</th>
-                                    <th>label</th>
-                                    <th>url</th>
-                                    <th>排序</th>
-                                    <th>状态</th>
-                                    <th style="text-align: center">切换状态</th>
-                                    <th>添加子菜单</th>
-                                    <th>修改</th>
-                                    <th style="text-align: center">删除</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="item:${list}">
-                                    <td th:text="${item.id}">id</td>
-                                    <td th:text="${item.label}">label</td>
-                                    <td th:text="${item.url}">url</td>
-                                    <td th:text="${item.order}">order</td>
-                                    <td th:text="${item.disabled}?'禁用':'启用'" id="status">status</td>
-                                    <td style="text-align: center">
-                                        <span name="lock" title="切换状态"
-                                              th:data="@{/menu/{id}/status(disable=${!item.disabled},id=${item.id})}"
-                                              style="cursor: pointer" class="glyphicon glyphicon-lock"></span>
-
-                                    </td>
-                                    <td><a href="" th:href="@{/menu/form/(id=${item.path}+','+${item.id},parent=true)}">add
-                                        item</a></td>
-                                    <td style="text-align: center">
-                                        <a th:href="@{/menu/form(id=${item.id})}"><span class="glyphicon glyphicon-edit"
-                                                                                        title="编辑"></span></a>
-                                    </td>
-                                    <td style="text-align: center">
-
-                                        <span name="trash" title="删除" th:data="@{/menu/{id}/delete(id=${item.id})}"
-                                              style="cursor: pointer" class="glyphicon glyphicon-trash"></span>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- /.box-body -->
-                    </div>
-                    <!-- /.box -->
-                </div>
-                <!-- /.col -->
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+<!--         <blockquote class="layui-elem-quote">
+            Layui的树形表格treeTable，支持异步加载(懒加载)、复选框联动、折叠状态记忆。<br>
+            <a href="https://gitee.com/whvse/treetable-lay" target="_blank" class="layui-btn layui-btn-danger">treetable-lay</a>
+        </blockquote> -->
+        <div>
+        <div class="layui-btn-group">
+                <button class="layui-btn" id="btn-refresh">刷新</button>
             </div>
-
-        </section>
-        <!-- /.content -->
+            <div class="layui-btn-group">
+                <button class="layui-btn" id="btn-expand">全部展开</button>
+                <button class="layui-btn layui-btn-normal" id="btn-fold">全部折叠</button>
+            </div>
+            <table id="munu-table" class="layui-table" lay-filter="munu-table"></table>
+        </div>
     </div>
-    <!-- /.content-wrapper -->
-
-
 </div>
+<!-- 操作列 -->
+<script type="text/html" id="auth-state">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="creat">添加子菜单</a>
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
 
-<div th:replace="script"></div>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script th:inline="javascript">
+	var ctx = /*[[@{/}]]*/'';
+    layui.use(['table', 'treetable','miniTab','form'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var treetable = layui.treetable;
+        var miniTab = layui.miniTab;
+        var form = layui.form;
+        // 渲染表格
+        var renderTable = function () {
+        	layer.load(2);
+        	 treetable.render({
+                 treeColIndex: 1,
+                 treeSpid: 0,
+                 treeIdName: 'id',
+                 treePidName: 'pid',
+                 elem: '#munu-table',
+                 url: ctx + 'menu/list',
+                 page: false,
+                 cols: [[
+                     {type: 'numbers'},
+                     {field: 'title', minWidth: 200, title: '菜单名称'},
+                     {field: 'href', title: '菜单url'},
+                     {field: 'icon' , hide : false, title: '图标', align: 'center', templet: function (d) {
+                     	 return '<span class="'+d.icon+'"></span>';
+                     }}, 
+                     {field: 'target', title: '链接打开方式'},
+                     {field: 'sort',width: 80, align: 'center', title: '排序号'},
+                     {field: 'status',title: '状态',width: 120, templet: function (d) {
+                    	 if(d.status){
+                    		 return  '<input type="checkbox" checked="" data = "'+d.id+'" value="'+d.status+'" lay-skin="switch" lay-filter="switch" lay-text="启用|禁用">';	 
+                    	 }else{
+                    		 return  '<input type="checkbox" data = "'+d.id+'" value="'+d.status+'" lay-skin="switch" lay-filter="switch" lay-text="启用|禁用">';	 
+                    	 }       
+                     }},//状态(0:禁用,1:启用)
+                     {field: 'remark',title: '备注信息'},  
+     /*                 {
+                         field: 'isMenu', width: 80, align: 'center', templet: function (d) {
+                             if (d.isMenu == 1) {
+                                 return '<span class="layui-badge layui-bg-gray">按钮</span>';
+                             }
+                             if (d.parentId == 0) {
+                                 return '<span class="layui-badge layui-bg-blue">目录</span>';
+                             } else {
+                                 return '<span class="layui-badge-rim">菜单</span>';
+                             }
+                         }, title: '类型'
+                     }, */
+                     {templet: '#auth-state', width: 220, align: 'center', title: '操作'}
+                 ]],
+                 done: function () {
+                     layer.closeAll('loading');
+                 }
+             });
+        }
+        
+        renderTable();
 
-<!-- page script -->
-<script>
-    $(function () {
-        $('#dataTable').DataTable({
-            "paging": true,
-            "lengthChange": false,
-            "searching": false,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false
+        $('#btn-expand').click(function () {
+            treetable.expandAll('#munu-table');
+        });
+		$('#btn-refresh').click(function () {
+			renderTable();
+        });
+        $('#btn-fold').click(function () {
+            treetable.foldAll('#munu-table');
+        });
+		function openLayerPopo(url,title){
+      	  layer.open({
+      		    type: 2
+      		  , title: title
+              , shade: 0.2
+              , maxmin: true
+              , shadeClose: true
+              , area: ['100%', '100%']
+              , content: url
+      	  	  , end: function (){
+      	  		renderTable();
+      	  	  }
+          });
+          $(window).on("resize", function () {
+              layer.full(index);
+          });
+		}
+		//监听指定开关
+        form.on('switch(switch)', function (data) {
+           /*  layer.msg('开关checked：' + (this.checked ? 'true' : 'false'), {
+                offset: '6px'
+            }); */
+/*               layer.msg('开关checked：' +  $(data.elem).attr("data"), {
+            offset: '6px'
+        	});  */
+        	$.ajax({
+        	    url: ctx +"menu/"+$(data.elem).attr("data")+"/status?disable="+this.checked ,
+        	    type: 'PUT',
+        	    success: function(result) {
+        	    	layer.msg('修改成功');
+        	    	renderTable();
+        	    }
+        	});
+           // layer.tips('温馨提示：默认开启', data.othis)
+        });
+        //监听工具条
+        table.on('tool(munu-table)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'del') { 
+                layer.confirm('真的删除么', function (index) {
+                	$.ajax({
+                	    url: ctx +"menu/"+data.id+"/delete",
+                	    type: 'DELETE',
+                	    success: function(result) {
+                	    	layer.msg('删除成功' + data.title);
+                	    	renderTable();
+                	    }
+                	});
+                	
+                });
+              
+            } else if (layEvent === 'edit') {
+                openLayerPopo(ctx + "menu/form?id="+data.id+"&udpate=true","修改");
+                // 打开新的窗口 
+/*                 miniTab.openNewTabByIframe({
+                    href: ctx + "menu/form?id="+data.id+"&udpate=true",
+                    title:"修改",
+                }); */
+        	} else if (layEvent === 'creat') {
+            	openLayerPopo(ctx + "menu/form?id="+data.id+"&udpate=false","添加下级");
+/*             	  miniTab.openNewTabByIframe({
+                      href: ctx + "menu/form?id="+data.id+"&udpate=false",
+                      title:"新增",
+                  }); */
+        	}
         });
     });
 </script>
-<script th:src="@{/js/list-page.js}"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@ public class DemoController extends BaseController {
 		int page = Integer.valueOf(start).intValue()/Integer.valueOf(length).intValue();
 		//获取前台额外传递过来的查询条件
 		DatatablesViewPage<DemoModel> model = demoService.list(page, Integer.valueOf(length).intValue());
-		model.setDraw(Integer.valueOf(draw));
+		//model.setDraw(Integer.valueOf(draw));
 		//随便组织的查询结果
 		return model;
 	}

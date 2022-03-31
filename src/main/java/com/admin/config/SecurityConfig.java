@@ -27,9 +27,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
+import com.admin.common.response.BaseResponse;
+import com.admin.security.CaptchaFilterConfig;
 import com.admin.security.UrlSecurityInterceptor;
 import com.admin.security.UserDetailService;
 
@@ -37,11 +41,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Jonsy
+ * @author mason
  *
  */
 @Configuration
@@ -51,7 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     protected UserDetailService userDetailService;
-
+    @Autowired
+    private CaptchaFilterConfig captchaFilterConfig;
 
     @Autowired
     protected PasswordEncoder passwordEncoder;
@@ -75,20 +81,37 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().disable();
-        http.headers().disable();
-        http.jee().disable();
-        http.x509().disable();
-        http.servletApi().disable();
-        http.anonymous().disable();
-        http.requestCache().disable();
-
-        http.rememberMe().userDetailsService(userDetailService).key(key).useSecureCookie(false).alwaysRemember(true);
-        http.addFilterAt(urlSecurityInterceptor(), FilterSecurityInterceptor.class);//处理自定义的权限
-        //http.authorizeRequests()对应FilterSecurityInterceptor，不配置就不会加入FilterSecurityInterceptor
-        http.formLogin().loginProcessingUrl("/login").loginPage("/to-login").defaultSuccessUrl("/").successHandler(new AuthenticationSuccessHandler());
-        http.logout().logoutSuccessHandler(new LogoutSuccessHandler());
-        http.exceptionHandling().authenticationEntryPoint(new MyAuthenticationEntryPoint()).accessDeniedHandler(new MyAccessDeniedHandler());
+    	  http
+          // 关闭csrf防护
+          .csrf().disable()
+          .headers().frameOptions().disable()
+          .and()
+          .rememberMe()
+          .userDetailsService(userDetailService)
+          .key(key)
+          .useSecureCookie(false)
+          .alwaysRemember(true);
+    	  //自定义url访问权限处理
+    	  http.addFilterAt(urlSecurityInterceptor(), FilterSecurityInterceptor.class);//处理自定义的权限
+          //登录处理
+    	  http.addFilterBefore(captchaFilterConfig, UsernamePasswordAuthenticationFilter.class)
+          .formLogin()
+          .loginProcessingUrl("/login")
+          .loginPage("/to-login")
+          .defaultSuccessUrl("/")
+          .successHandler(new AuthenticationSuccessHandler())
+          .failureHandler(new LoginFailureHandlerConfig())
+          //.permitAll()
+          .and()
+          //登出处理
+          .logout()
+          .logoutUrl("/logout")
+          .logoutSuccessHandler(new LogoutSuccessHandler())
+          .logoutSuccessUrl("/to-login");
+    	
+    	  http.exceptionHandling()
+    	  .authenticationEntryPoint(new MyAuthenticationEntryPoint())
+    	  .accessDeniedHandler(new MyAccessDeniedHandler());
     }
 
     @Override
@@ -109,12 +132,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         AccessDecisionManager accessDecisionManager = new AffirmativeBased(voters);
         return accessDecisionManager;
     }
-
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/**/*.js", "/**/*.js.map", "/**/*.ts", "/**/*.css", "/**/*.css.map", "/**/*.png", "/**/*.gif", "/**/*.jpg", "/**/*.fco", "/**/*.woff", "/**/*.woff2", "/**/*.font", "/**/*.svg", "/**/*.ttf", "/**/*.pdf","/*.ico", "/admin/api/**", "/404", "/401","/403", "/error");
-    }
-
+    
+  protected boolean isAjax(HttpServletRequest request) {
+  return StringUtils.isNotBlank(request.getHeader("x-requested-with"));
+}
     //由于springboot默认会将所要的servlet,filter,listenr等标准servlet组件自动加入到servlet的过滤器链中，自定义的UrlSecurityInterceptor只希望加入security的过滤器链，中，所以这里配置不向servlet容器中注册
     @Bean
     public FilterRegistrationBean registration(UrlSecurityInterceptor filter) {
@@ -122,66 +143,88 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         registration.setEnabled(false);
         return registration;
     }
-
-    protected boolean isAjax(HttpServletRequest request) {
-        return StringUtils.isNotBlank(request.getHeader("X-Requested-With"));
-    }
-
-
-    private class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
+  @Override
+  public void configure(WebSecurity web) throws Exception {
+      web.ignoring().antMatchers("/**/*.js", "/**/*.js.map", "/**/*.ts", "/**/*.css", "/**/*.css.map", "/**/*.png", "/**/*.gif", "/**/*.jpg", "/**/*.fco", "/**/*.woff", "/**/*.woff2", "/**/*.font", "/**/*.svg", "/**/*.ttf", "/**/*.pdf","/*.ico", "/admin/api/**", "/404", "/401","/403", "/error");
+  }
+    
+    private class LoginFailureHandlerConfig implements AuthenticationFailureHandler {
         @Override
-        public void onAuthenticationSuccess(HttpServletRequest request,
-                                            HttpServletResponse response, Authentication authentication)
-                throws ServletException, IOException {
-
-            clearAuthenticationAttributes(request);
-            if (!isAjax(request)) {
-                super.onAuthenticationSuccess(request, response, authentication);
-            }
+        public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+            System.out.println("用户名或密码错误");
+            //响应json
+            httpServletResponse.setCharacterEncoding("UTF-8");
+            httpServletResponse.setContentType("application/json; charset=utf-8");
+            PrintWriter out = httpServletResponse.getWriter();
+            out.print("{\"code\":\"500\",\"msg\":\"用户名或密码错误\"}");
+            out.flush();
+            out.close();
         }
     }
+  private class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
+      @Override
+      public void onAuthenticationSuccess(HttpServletRequest request,
+                                          HttpServletResponse response, Authentication authentication)
+              throws ServletException, IOException {
 
-        @Override
-        public void onLogoutSuccess(HttpServletRequest request,
-                                    HttpServletResponse response, Authentication authentication)
-                throws IOException, ServletException {
-            if (!isAjax(request)) {
-                super.onLogoutSuccess(request, response, authentication);
-            }
-        }
-    }
+          clearAuthenticationAttributes(request);
+          if (!isAjax(request)) {
+              super.onAuthenticationSuccess(request, response, authentication);
+          }else{
+        	  response.setCharacterEncoding("UTF-8");
+        	  response.setContentType("application/json; charset=utf-8");
+          	  response.getWriter().println("{\"code\":\"0\",\"msg\":\"登录成功\",\"url\":\"/index\"}");
+          }
+      }
+  }
+  private class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
-    private class MyAuthenticationEntryPoint implements AuthenticationEntryPoint {
+      @Override
+      public void onLogoutSuccess(HttpServletRequest request,
+                                  HttpServletResponse response, Authentication authentication)
+              throws IOException, ServletException {
+          if (!isAjax(request)) {
+              super.onLogoutSuccess(request, response, authentication);
+          }else{
+        	  response.setCharacterEncoding("UTF-8");
+        	  response.setContentType("application/json; charset=utf-8");
+          	  response.getWriter().println("{\"code\":\"0\",\"msg\":\"退出成功\",\"url\":\"/index\"}");
+          }
+      }
+  }
 
-        @Override
-        public void commence(HttpServletRequest request,
-                             HttpServletResponse response,
-                             AuthenticationException authException) throws IOException {
-            response.setCharacterEncoding("utf-8");
-            if (isAjax(request)) {
-                response.getWriter().println("请登录");
-            } else {
-                response.sendRedirect("/to-login");
-            }
+  private class MyAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-        }
-    }
+      @Override
+      public void commence(HttpServletRequest request,
+                           HttpServletResponse response,
+                           AuthenticationException authException) throws IOException {
+          response.setCharacterEncoding("utf-8");
+          if (isAjax(request)) {
+        	  response.setContentType("application/json; charset=utf-8");
+          	  response.getWriter().println("{\"code\":\"500\",\"msg\":\"请登录\"}");
+          } else {
+              response.sendRedirect("/to-login");
+          }
 
-    private class MyAccessDeniedHandler implements AccessDeniedHandler {
-        @Override
-        public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-            response.setCharacterEncoding("utf-8");
-            if (isAjax(request)) {
-                response.getWriter().println("您无权访问");
-            } else {
-                response.sendRedirect("/403");
-            }
+      }
+  }
 
-        }
-    }
+  private class MyAccessDeniedHandler implements AccessDeniedHandler {
+      @Override
+      public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+          response.setCharacterEncoding("utf-8");
+          if (isAjax(request)) {
+        	  response.setCharacterEncoding("UTF-8");
+        	  response.setContentType("application/json; charset=utf-8");
+          	  response.getWriter().println("{\"code\":\"403\",\"msg\":\"无权访问\"}");
+          } else {
+              response.sendRedirect("/403");
+          }
+
+      }
+  }
 
     public static void main(String[] args) {
     	  PasswordEncoder ddds = PasswordEncoderFactories.createDelegatingPasswordEncoder();

@@ -1,5 +1,6 @@
 package com.admin.security;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,19 +10,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.admin.domain.modle.Role;
-import com.admin.domain.modle.User;
-import com.admin.domain.repository.RoleRepository;
-import com.admin.domain.repository.UserRepository;
+import com.admin.entity.Role;
+import com.admin.entity.User;
+import com.admin.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
 
 
 /**
- * @author Jonsy
+ * @author mason
  *
  */
 @Service
@@ -30,12 +34,9 @@ public class UserDetailService implements UserDetailsService {
     @Autowired
     protected UserRepository userRepository;
 
-    @Autowired
-    protected RoleRepository roleRepository;
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user=userRepository.findByUserName(username);
+        User user=userRepository.findByUsername(username);
         if(user==null){
             throw new UsernameNotFoundException("no user");
         }
@@ -43,8 +44,10 @@ public class UserDetailService implements UserDetailsService {
         return userDetails;
     }
 
+    @Transactional
     protected Collection<GrantedAuthority> grantedAuthorities(String userId){
-        List<Role> resources=roleRepository.getRoles(userId);
+        User user=userRepository.findById(userId).get();
+        Set<Role> resources=user.getRole();
         if(CollectionUtils.isEmpty(resources)){
             return new ArrayList<>();
         }

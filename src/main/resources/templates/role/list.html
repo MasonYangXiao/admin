@@ -1,105 +1,186 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <div th:replace="head"></div>
-    <!-- DataTables -->
-    <link rel="stylesheet" href="../plugins/datatables/dataTables.bootstrap.css"/>
+    <meta charset="utf-8">
     <title>角色管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
 </head>
-
-<body class="hold-transition skin-blue sidebar-mini ">
-<div class="wrapper">
-
-    <div th:replace="header"></div>
-    <div th:replace="sidebar"></div>
-
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-
-
-        <!-- Main content -->
-        <section class="content">
-            <div class="row">
-                <div class="col-xs-12">
-
-                    <div class="box">
-                        <div class="box-header">
-                            <a th:href="@{/role/form}" title="新增角色"><span class="glyphicon glyphicon-plus"></span></a>
-                        </div>
-
-                        <div class="box-body">
-                            <table id="dataTable" class="table table-bordered table-striped">
-                                <thead>
-                                <tr>
-                                    <th>名称</th>
-                                    <th>描述</th>
-                                    <th>状态</th>
-                                    <th style="text-align: center">切换状态</th>
-                                    <th>修改</th>
-                                    <th style="text-align: center">删除</th>
-                                    <th style="text-align: center">授权</th>
-                                    <th style="text-align: center">分配菜单</th>
-
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="item:${list}">
-                                    <td th:text="${item.name}">名称</td>
-                                    <td th:text="${item.description}">url</td>
-                                    <td th:text="${item.disabled}?'禁用':'启用'" id="status">status</td>
-                                    <td style="text-align: center">
-                                        <span name="lock" title="切换状态"
-                                              th:data="@{/role/{id}/status(disable=${!item.disabled},id=${item.id})}"
-                                              style="cursor: pointer" class="glyphicon glyphicon-lock"></span>
-
-                                    </td>
-                                    <td style="text-align: center">
-                                        <a th:href="@{/role/form(id=${item.id})}"><span class="glyphicon glyphicon-edit"
-                                                                                        title="编辑"></span></a>
-                                    </td>
-                                    <td style="text-align: center">
-
-                                        <span name="trash" title="删除" th:data="@{/role/{id}/delete(id=${item.id})}"
-                                              style="cursor: pointer" class="glyphicon glyphicon-trash"></span>
-                                    </td>
-
-                                    <th style="text-align: center"><a th:href="@{/role/{id}/select-resource(id=${item.id})}"><span style="cursor: pointer" class="glyphicon glyphicon-transfer" title="授权"></span></a></th>
-                                    <th style="text-align: center"><a th:href="@{/role/{id}/select-menu(id=${item.id})}"><span class="glyphicon glyphicon-tasks" title="分配菜单" style="cursor: pointer"></span></a></th>
-
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- /.box-body -->
-                    </div>
-                    <!-- /.box -->
-                </div>
-                <!-- /.col -->
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="toolbar">
+            <div class="layui-btn-container">
+ 				<button class="layui-btn layui-btn-sm layuimini-btn-primary"  lay-event="refresh"> 刷新 </button>
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
             </div>
+        </script>
 
-        </section>
-        <!-- /.content -->
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-xs" lay-event="grant_menu">菜单设置</a>
+  			<a class="layui-btn layui-btn-xs" lay-event="grant_resource">权限设置</a>
+			<a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
     </div>
-    <!-- /.content-wrapper -->
-
-
 </div>
-
-<div th:replace="script"></div>
-
-<!-- page script -->
-<script>
-    $(function () {
-        $('#dataTable').DataTable({
-            "paging": true,
-            "lengthChange": false,
-            "searching": false,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script th:inline="javascript">
+	var ctx = /*[[@{/}]]*/'';
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+        table.render({
+            elem: '#currentTableId',
+            url: ctx + 'role/list',
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [
+            	[{type: 'checkbox', width: 50},
+                {field: 'id', width: 80, title: 'ID', sort: true},
+                {field: 'name', title: '角色'},
+                {field: 'description',title: '描述'},
+                {field: 'disabled', width: 80, title: '状态',templet: function(d){
+                	if(d.disabled){
+                		return  '<input type="checkbox" data="'+d.id+'" checked="" value="'+d.disabled+'" lay-skin="switch" lay-filter="switch" lay-text="开|关">';
+                	}else{
+                		return  '<input type="checkbox" data="'+d.id+'" value="'+d.disabled+'" lay-skin="switch" lay-filter="switch" lay-text="开|关">';	
+                	}
+                	
+                }},
+                {field: 'sort', width: 80,title: '排序'},
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}]
+            	],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
         });
+        
+      //监听指定开关
+        form.on('switch(switch)', function (data) {
+           /*  layer.msg('开关checked：' + (this.checked ? 'true' : 'false'), {
+                offset: '6px'
+            }); */
+/*               layer.msg('开关checked：' +  $(data.elem).attr("data"), {
+            offset: '6px'
+        	});  */
+        	$.ajax({
+        	    url: ctx +"role/"+$(data.elem).attr("data")+"/status?disable="+this.checked ,
+        	    type: 'PUT',
+        	    success: function(result) {
+        	    	layer.msg('修改成功');
+        	    }
+        	});
+           // layer.tips('温馨提示：默认开启', data.othis)
+        });
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加角色',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: ctx + "role/form",
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId'),data = checkStatus.data;
+                layer.alert(JSON.stringify(data));
+            } else if(obj.event === 'refresh'){
+            	table.reload('currentTableId', {
+            		  url: ctx + 'role/list'
+            		  ,where: {} //设定异步数据接口的额外参数
+            		  //,height: 300
+            		});
+            }
+        });
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                var index = layer.open({
+                    title: '编辑角色',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: ctx + "role/form?id="+data.id,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            } else if (obj.event === 'delete') {
+                layer.confirm('真的删除行么', function (index) {
+                 	$.ajax({
+                	    url: ctx +"role/"+data.id+"/delete",
+                	    type: 'DELETE',
+                	    success: function(result) {
+                	    	layer.msg('删除成功');
+                	    	 obj.del();
+                	    	 layer.close(index);
+                	    }
+                	});
+                });
+            } else if (obj.event === 'grant_menu') {
+                var index = layer.open({
+                    title: '绑定菜单',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: ctx + "role/grant-menu?id="+data.id,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }else if (obj.event === 'grant_resource') {
+                var index = layer.open({
+                    title: '权限设置',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: ctx + "role/grant-resource?id="+data.id,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+            
+        });
+
     });
 </script>
-<script th:src="@{/js/list-page.js}"></script>
+
 </body>
 </html>

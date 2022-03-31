@@ -15,8 +15,8 @@ import org.springframework.security.web.access.intercept.FilterSecurityIntercept
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.CollectionUtils;
 
-import com.admin.domain.modle.Resource;
-import com.admin.domain.repository.ResourceRepository;
+import com.admin.entity.SysResource;
+import com.admin.repository.SysResourceRepository;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class UrlSecurityInterceptor extends FilterSecurityInterceptor {
 
     @Autowired
-    protected ResourceRepository resourceRepository;
+    protected SysResourceRepository resourceRepository;
 
     private AntPathMatcher pathMatcher=new AntPathMatcher();
 
@@ -92,7 +92,7 @@ public class UrlSecurityInterceptor extends FilterSecurityInterceptor {
     }
 
     private boolean isSecurityUrl(String url){
-        List<Resource> resources=resourceRepository.getEnableResources();
+        List<SysResource> resources=resourceRepository.findByDisabled(false);
         if(CollectionUtils.isEmpty(resources)){
             return false;
         }

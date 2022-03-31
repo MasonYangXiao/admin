@@ -31,9 +31,9 @@ public class DemoService {
 				  DemoModel model = JSONObject.parseObject(p.toString(), DemoModel.class);
 				 return model;
 			 }).collect(Collectors.toList());
-			  models.setData(list);
-			  models.setRecordsTotal(total.intValue());
-			  models.setRecordsFiltered(total.intValue());
+//			  models.setData(list);
+//			  models.setRecordsTotal(total.intValue());
+//			  models.setRecordsFiltered(total.intValue());
 			return models;
 	}
 

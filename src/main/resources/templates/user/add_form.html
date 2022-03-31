@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>表单</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+     <link rel="stylesheet" href="../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>创建用户</legend>
+        </fieldset>
+        <form class="layui-form" lay-filter="example">
+            <div class="layui-form-item">
+                <label class="layui-form-label">账户</label>
+                <div class="layui-input-block">
+                    <input type="title" name="username" lay-verify="username" lay-reqtext="账户是必填项，岂能为空？"  placeholder="请输入账户" class="layui-input">
+                </div>
+            </div> 
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-block">
+                     <input type="email" name="email" lay-verify="email" autocomplete="off" placeholder="请输入邮箱"  class="layui-input">
+                </div>
+            </div>    
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="password" lay-verify="pass" lay-reqtext="密码最少6位"  placeholder="请输入密码" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">请务必填写用户名</div>
+            </div> 
+       		<div class="layui-form-item">
+                <label class="layui-form-label">再次确认</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="password_two" placeholder="请再次输入密码" autocomplete="off" class="layui-input">
+                </div>
+            </div>                       
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit="" lay-filter="saveBtn">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script th:inline="javascript">
+	var ctx = /*[[@{/}]]*/'';
+	layui.use(['form','layer'], function () {
+	    var form = layui.form,
+	        layer = layui.layer,
+	        $ = layui.$;
+	    //自定义验证规则
+        form.verify({
+        	username: function (value) {
+        		var selectusername = false;
+        		$.ajax({
+        		    url: ctx+"user/selectusername",
+        		    data:{username : value},
+        		    async: false,
+        		    success: function (data) {
+           			 if (data.code == 0) {
+         				if (!data.data.valid){
+         					selectusername = true;
+         				}
+         			 }
+        		    }
+        		});
+        		if(selectusername){
+        		 	return "账户已被注册";
+        		}
+            },
+             email: function (value) {
+            	 var selectuseremail = false;
+         		$.ajax({
+        		    url: ctx+"user/selectuseremail",
+        		    data:{email : value},
+        		    async: false,
+        		    success: function (data) {
+           			 if (data.code == 0) {
+         				if (!data.data.valid){
+         					selectuseremail = true;
+         				}
+         			 }
+        		    }
+        		});
+            	 if(selectuseremail){
+         		 	return "邮箱已被注册";
+         		}
+        	},
+        	pass: [
+                /^[\S]{6,12}$/
+                , '密码必须6到12位，且不能出现空格'
+            	]  
+        });
+	    //监听提交
+	    form.on('submit(saveBtn)', function (data) {
+	    	if(data.field.password != data.field.password_two){
+	    		layer.msg("请再次确认密码", {icon: 2,time: 2000}, function () {});
+	    		return false;
+	    	}
+	    	var requestJson = JSON.stringify(data.field);
+        	$.ajax({
+                type: "POST",
+                url: ctx +"user/add",
+                contentType: "application/json", //必须有
+                data: requestJson,  //相当于 //data: "{'str1':'foovalue', 'str2':'barvalue'}",
+                success: function (data) {
+	            	  if (data.code == 0) {
+	                        layer.msg(data.msg, {icon: 1,time: 1000}, function () {
+	            	            var iframeIndex = parent.layer.getFrameIndex(window.name);
+	            	            parent.layer.close(iframeIndex);
+	                        });
+	                    } else {
+	                        layer.msg(data.msg, {icon: 2,time: 2000}, function () {});
+	                    }
+                }
+            });
+	        return false;
+	    });
+	});
+</script>
+
+</body>
+</html>

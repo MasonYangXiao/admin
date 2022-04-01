@@ -1,147 +1,166 @@
 /*
- Navicat Premium Data Transfer
+Navicat MySQL Data Transfer
 
- Source Server         : 测试1
- Source Server Type    : MySQL
- Source Server Version : 50726
- Source Host           : 47.94.21.9:40339
- Source Schema         : admin_manager
+Source Server         : 本地
+Source Server Version : 80027
+Source Host           : localhost:3306
+Source Database       : admin
 
- Target Server Type    : MySQL
- Target Server Version : 50726
- File Encoding         : 65001
+Target Server Type    : MYSQL
+Target Server Version : 80027
+File Encoding         : 65001
 
- Date: 22/04/2020 17:51:14
+Date: 2022-04-01 11:19:47
 */
 
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for menu
--- ----------------------------
-DROP TABLE IF EXISTS `menu`;
-CREATE TABLE `menu`  (
-  `id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `label` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `path` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '0',
-  `order` smallint(6) NULL DEFAULT 1,
-  `level` smallint(6) NULL DEFAULT 1 COMMENT '层级，方便根据层级查询',
-  `url` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `type` smallint(6) NULL DEFAULT 1 COMMENT '扩展不同菜单时用',
-  `style` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ui 样式',
-  `disabled` smallint(6) NULL DEFAULT 0,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of menu
--- ----------------------------
-INSERT INTO `menu` VALUES ('menu', '菜单管理', '0,system', 2, 1, '/menu', 1, NULL, 0);
-INSERT INTO `menu` VALUES ('role', '角色管理', '0,system', 3, 3, '/role', 1, NULL, 0);
-INSERT INTO `menu` VALUES ('system', '系统管理', '0', 1, 1, '', 1, NULL, 0);
-INSERT INTO `menu` VALUES ('user', '用户管理', '0,system', 4, 2, '/user', 1, NULL, 0);
-
--- ----------------------------
--- Table structure for resource
--- ----------------------------
-DROP TABLE IF EXISTS `resource`;
-CREATE TABLE `resource`  (
-  `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `disabled` smallint(6) NULL DEFAULT NULL,
-  `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
 -- Table structure for role
 -- ----------------------------
 DROP TABLE IF EXISTS `role`;
-CREATE TABLE `role`  (
-  `id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `name` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色',
-  `disabled` smallint(6) NOT NULL DEFAULT 0,
-  `description` varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '描述',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `rolename`(`name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
+CREATE TABLE `role` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `description` varchar(255) DEFAULT NULL,
+  `disabled` bit(1) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `sort` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of role
 -- ----------------------------
-INSERT INTO `role` VALUES ('1', 'admin', 0, '管理员');
-INSERT INTO `role` VALUES ('f1d07c8f-57e9-4e00-a03f-348a96cd54e2', 'user', 0, '普通用户');
+INSERT INTO `role` VALUES ('1', '超级管理员', '\0', 'admin', '0');
+INSERT INTO `role` VALUES ('3', '管理员', '\0', '管理员', '1');
 
 -- ----------------------------
--- Table structure for role_menu
+-- Table structure for role_sys_menu
 -- ----------------------------
-DROP TABLE IF EXISTS `role_menu`;
-CREATE TABLE `role_menu`  (
-  `role_id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `menu_id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  INDEX `role_id_rm`(`role_id`) USING BTREE,
-  INDEX `menu_code_rm`(`menu_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+DROP TABLE IF EXISTS `role_sys_menu`;
+CREATE TABLE `role_sys_menu` (
+  `roles_id` bigint NOT NULL,
+  `sys_menu_id` int NOT NULL,
+  PRIMARY KEY (`roles_id`,`sys_menu_id`),
+  KEY `FKo9r80xwb6uxhnwwbignnk8x8t` (`sys_menu_id`),
+  CONSTRAINT `FKo9r80xwb6uxhnwwbignnk8x8t` FOREIGN KEY (`sys_menu_id`) REFERENCES `system_menu` (`id`),
+  CONSTRAINT `FKqytlcibkadym4xsblhqsiqbgc` FOREIGN KEY (`roles_id`) REFERENCES `role` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
--- Records of role_menu
+-- Records of role_sys_menu
 -- ----------------------------
-INSERT INTO `role_menu` VALUES ('1', 'menu');
-INSERT INTO `role_menu` VALUES ('1', 'role');
-INSERT INTO `role_menu` VALUES ('1', 'system');
-INSERT INTO `role_menu` VALUES ('1', 'user');
-INSERT INTO `role_menu` VALUES ('f1d07c8f-57e9-4e00-a03f-348a96cd54e2', 'menu');
+INSERT INTO `role_sys_menu` VALUES ('1', '1');
+INSERT INTO `role_sys_menu` VALUES ('3', '1');
+INSERT INTO `role_sys_menu` VALUES ('1', '2');
+INSERT INTO `role_sys_menu` VALUES ('3', '2');
+INSERT INTO `role_sys_menu` VALUES ('1', '3');
+INSERT INTO `role_sys_menu` VALUES ('3', '3');
+INSERT INTO `role_sys_menu` VALUES ('1', '6');
+INSERT INTO `role_sys_menu` VALUES ('3', '6');
+INSERT INTO `role_sys_menu` VALUES ('1', '7');
+INSERT INTO `role_sys_menu` VALUES ('3', '7');
 
 -- ----------------------------
--- Table structure for role_resource
+-- Table structure for role_sys_resource
 -- ----------------------------
-DROP TABLE IF EXISTS `role_resource`;
-CREATE TABLE `role_resource`  (
-  `id` int(20) NOT NULL AUTO_INCREMENT,
-  `role_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `resource_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+DROP TABLE IF EXISTS `role_sys_resource`;
+CREATE TABLE `role_sys_resource` (
+  `roles_id` bigint NOT NULL,
+  `sys_resource_id` bigint NOT NULL,
+  PRIMARY KEY (`roles_id`,`sys_resource_id`),
+  KEY `FKt3kkraamu17f0dss8sqpu4u64` (`sys_resource_id`),
+  CONSTRAINT `FKfwd4rq4shhsp42tamssswhgi7` FOREIGN KEY (`roles_id`) REFERENCES `role` (`id`),
+  CONSTRAINT `FKt3kkraamu17f0dss8sqpu4u64` FOREIGN KEY (`sys_resource_id`) REFERENCES `sys_resource` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Records of role_sys_resource
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for system_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `system_menu`;
+CREATE TABLE `system_menu` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_at` datetime DEFAULT NULL,
+  `delete_at` datetime DEFAULT NULL,
+  `href` varchar(255) DEFAULT NULL,
+  `icon` varchar(255) DEFAULT NULL,
+  `pid` int DEFAULT NULL,
+  `remark` varchar(255) DEFAULT NULL,
+  `sort` int DEFAULT NULL,
+  `status` bit(1) DEFAULT NULL,
+  `target` varchar(255) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `update_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Records of system_menu
+-- ----------------------------
+INSERT INTO `system_menu` VALUES ('1', '2022-03-30 03:57:17', null, '', 'fa fa-window-maximize', '0', '系统模块', '0', '', '_self', '系统模块', '2022-03-30 03:59:26');
+INSERT INTO `system_menu` VALUES ('2', '2022-03-30 04:01:19', null, 'menu', 'fa fa-window-maximize', '1', '菜单管理', '1', '', '_self', '菜单管理', '2022-03-30 04:13:02');
+INSERT INTO `system_menu` VALUES ('3', '2022-03-30 04:10:56', null, 'role', 'fa fa-bars', '1', '角色管理', '2', '', '_self', '角色管理', '2022-03-30 04:13:05');
+INSERT INTO `system_menu` VALUES ('6', '2022-03-31 01:14:52', null, 'user', 'fa fa-users', '1', '用户管理', '3', '', '_self', '用户管理', '2022-03-31 18:06:26');
+INSERT INTO `system_menu` VALUES ('7', '2022-03-31 23:09:55', null, 'resource', 'fa fa-window-restore', '1', '资源管理', '4', '', '_self', '资源管理', '2022-04-01 01:44:14');
+
+-- ----------------------------
+-- Table structure for sys_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_resource`;
+CREATE TABLE `sys_resource` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `description` varchar(255) DEFAULT NULL,
+  `disabled` bit(1) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Records of sys_resource
+-- ----------------------------
+INSERT INTO `sys_resource` VALUES ('1', '菜单接口', '\0', '菜单', '/menu/**');
 
 -- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user`  (
-  `id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键ID',
-  `username` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '登录名称',
-  `password` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '密码',
-  `email` varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '邮箱',
-  `disabled` smallint(6) NOT NULL DEFAULT 1 COMMENT '0、禁用 1、正常',
-  `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
-  `lastTime` datetime NULL DEFAULT NULL COMMENT '最后登录时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `loginname`(`username`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+CREATE TABLE `user` (
+  `id` varchar(64) NOT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `disabled` bit(1) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `last_time` datetime DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('1', 'root', '{bcrypt}$2a$10$oIoNnZDtRlE7tZ8aMJ9vieezAckiD5KBNwoqXwgjEOPZwXxT60voe', '15100310109@163.com', 0, '2016-09-27 19:53:20', '2016-09-27 19:53:22');
+INSERT INTO `user` VALUES ('1', '2022-03-30 04:16:37', '\0', '15100310109@163.com', '2022-03-30 04:16:51', '{bcrypt}$2a$10$.hfQewARcjaUJodE1HCNoO1evRgoZPgjaOD7yC40QylpO9CWNjFtK', 'root');
+INSERT INTO `user` VALUES ('d3910935-a066-4a2a-bb80-0bd2c5d8cc72', '2022-03-31 23:05:28', '\0', '619510281@qq.com', null, '{bcrypt}$2a$10$MnAyjq.3sRAlI9O1VCjvbOnUYqu0Q/NB.3QfSMmsALs8QmpIAWD6C', 'mason');
 
 -- ----------------------------
 -- Table structure for user_role
 -- ----------------------------
 DROP TABLE IF EXISTS `user_role`;
-CREATE TABLE `user_role`  (
-  `uid` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `role_id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  INDEX `uid`(`uid`) USING BTREE,
-  INDEX `role_id`(`role_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+CREATE TABLE `user_role` (
+  `user_id` varchar(64) NOT NULL,
+  `role_id` bigint NOT NULL,
+  PRIMARY KEY (`user_id`,`role_id`),
+  KEY `FKa68196081fvovjhkek5m97n3y` (`role_id`),
+  CONSTRAINT `FK859n2jvi8ivhui0rl0esws6o` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `FKa68196081fvovjhkek5m97n3y` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of user_role
 -- ----------------------------
 INSERT INTO `user_role` VALUES ('1', '1');
-INSERT INTO `user_role` VALUES ('8891e12f-81a7-43cd-8ab8-4accdf141f96', '1');
-INSERT INTO `user_role` VALUES ('aaf62456-d96c-4aae-bff0-90330a7d7a02', 'f1d07c8f-57e9-4e00-a03f-348a96cd54e2');
-
-SET FOREIGN_KEY_CHECKS = 1;
+INSERT INTO `user_role` VALUES ('d3910935-a066-4a2a-bb80-0bd2c5d8cc72', '3');

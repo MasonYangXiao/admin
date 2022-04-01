@@ -1,8 +1,7 @@
 # admin
-后台精简通用模板脚手架security+thymeleaf+hazelcast+jpa权限管理后台
+后台精简通用模板脚手架security+thymeleaf+hazelcast+jpa权限管理后台 前端页面已更新成layuimini的UI库修改了以前很多的bug
 
-如果你需要一个前后端不分离的后台管理系统. 不想安装跟配置太多的东西.只需要增删改查这些功能. 这个就很精简.
-
+优点前后端不分离只需维护一个项目即可
 spring boot 2.2.5 
 这里采用的是gradle管理的项目依赖
 
@@ -19,6 +18,3 @@ spring boot 2.2.5
 初始化数据库 etc/ddl.sql 
 启动服务
 http://127.0.0.1:8080  账户root 密码123456
-
-
-感谢jonsychen 这是基于他的后台通用模板升级的.因为他的仓库不更新了.我做了一些升级和修补了一些bug

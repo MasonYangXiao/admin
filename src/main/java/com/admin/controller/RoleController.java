@@ -98,6 +98,7 @@ public class RoleController{
 
     //为角色分配资源
     @RequestMapping(value = "/{id}/grant-resource",method = RequestMethod.POST)
+    @ResponseBody
     public BaseResponse<Void> grantResources(@PathVariable("id") Long id,  Long rid[] ) {
         if(rid==null){
            rid=new Long[0];

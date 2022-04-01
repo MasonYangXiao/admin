@@ -47,7 +47,7 @@ public class Role {
 	@JsonIgnore
 	private Set<User> user;
 	
-	@ManyToMany(fetch = FetchType.LAZY,cascade=CascadeType.REFRESH)
+	@ManyToMany(fetch = FetchType.EAGER,cascade=CascadeType.REFRESH)
 	@JsonIgnore
 	private Set<SysResource> sysResource;
 	

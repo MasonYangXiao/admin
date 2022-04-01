@@ -67,7 +67,7 @@
                     <span class="triangle"></span>
                 </div>
             </div>
-            <h2 class="h1">很抱歉，你访问的页面找不到了</h2>
+            <h2 class="h1">权限不足</h2>
         </div>
     </div>
 </div>
@@ -99,7 +99,7 @@
     loop1 = setInterval(function () {
         if (i > 100) {
             clearInterval(loop1);
-            document.querySelector('.firstDigit').textContent = 4;
+            document.querySelector('.firstDigit').textContent = 3;
         } else {
             document.querySelector('.firstDigit').textContent = randomNum();
             i++;

@@ -1,20 +1,75 @@
-# admin
-后台精简通用模板脚手架security+thymeleaf+hazelcast+jpa权限管理后台 前端页面已更新成layuimini的UI库修改了以前很多的bug
+# springboot_thymeleaf_security_layuimini 权限管理系统
 
-优点前后端不分离只需维护一个项目即可
-spring boot 2.2.5 
-这里采用的是gradle管理的项目依赖
 
-只实现了基础的用户/菜单/角色/权限功能，可以直接基于此项目开发自己的业务管理平台。
+# 项目介绍
 
-使用hazelcast作为缓存无需安装redis
+springboot_thymeleaf_security_layuimini是基于springboot+layuimini整合开发前后端不分离。
+- 以Spring Framework为核心容器；
+- Spring MVC为模型视图控制器；
+- thymeleaf 页面渲染；
+- JPA 为数据访问层；
+- spring security为权限授权层；
+- hazelcast为分布式缓存(后台管理不需要redis)；
+- layui+layuimini作为前端框架。
 
-我在项目里添加了demo代码可以照着这个去写模块
-我这里推荐分库 后台管理就是单独的一个数据库 
-新增模块也是通过https请求到其他服务的接口来进行管理
-如果后台管理模块巨多,可以使用此框架开发多服务版后台管理,去中心化. 各个服务采用OAuth2授权跳转,优点:精简轻量 缺点:前后端不分离
+# 项目特点
+- 开箱即用，节省开发时间，提高开发效率
+- 代码全部开源，持续更新，共同维护
+- 基于springboot，简化了大量项目配置和maven依赖，让您更专注于业务开发
+- 使用分包分层设计
+- 灵活的权限控制, 整合spring security，可控制到页面或按钮，满足绝大部分的权限需求,优化权限注解方便权限配置
+- 前端组件丰富，集成layuimini，基本涵盖了所有前端开发需求
+- 支持多种浏览器: Google, 火狐, IE,360等
 
-下载代码 
-初始化数据库 etc/ddl.sql 
-启动服务
-http://127.0.0.1:8080  账户root 密码123456
+# 技术选型
+### 前端
+|技术|名称|官网|
+| ------------ | ------------ | ------------ |
+|jQuery|js库|[http://jquery.com/](http://jquery.com/ "http://jquery.com/")|
+|layui.table|数据表格|[https://www.layui.com/doc/modules/table.html](https://www.layui.com/doc/modules/table.html "https://www.layui.com/doc/modules/table.html")|
+|layuimini|后台管理模板|[http://layuimini.99php.cn/](http://layuimini.99php.cn/ "http://layuimini.99php.cn/")|
+|layui|前端框架|[https://www.layui.com/](https://www.layui.com/ "https://www.layui.com/")|
+|layui.layer|弹出组件|[https://www.layui.com/doc/modules/layer.html](https://www.layui.com/doc/modules/layer.html "https://www.layui.com/doc/modules/layer.html")|
+|layui.treeTable|树形表格|[https://fly.layui.com/jie/30625/](https://fly.layui.com/jie/30625/ "https://fly.layui.com/jie/30625/")|
+
+# 功能列表
+```html
+- 系统管理
+    ○ 用户管理：用于管理后台系统的用户，可进行增删改查等操作
+    ○ 菜单管理：维护系统菜单，操作权限，按钮权限
+    ○ 资源管理：维护系统路径安全指定目录保存(下一步开发成自动搜索接口)
+    ○ 角色管理：维护系统角色信息，以角色为单位分配系统权限
+    ○ 日志管理：系统正常操作日志记录和查询；系统异常信息日志记录和查询(未开发)
+- 前端实例组件
+    ○ 格栅
+    ○ 按钮
+    ○ 表单
+    ○ 导航
+    ○ 选项卡
+    ○ 进度条
+    ○ 面板
+    ○ 通用弹出层
+    ○ 时间日期
+    ○ 数据表格
+    ○ 分页
+
+```
+
+# 更新日志
+## 2022-04-01 layui版本发布
+
+# 如何运行
+下载代码 初始化数据库 etc/ddl.sql 启动服务 http://127.0.0.1:8080 账户root 密码123456
+
+# 演示截图
+
+![菜单管理](https://github.com/MasonYangXiao/admin/tree/master/etc/菜单管理.png)
+
+![角色管理](https://github.com/MasonYangXiao/admin/tree/master/etc/角色管理.png)
+
+![用户管理](https://github.com/MasonYangXiao/admin/tree/master/etc/用户管理.png)
+
+![资源管理](https://github.com/MasonYangXiao/admin/tree/master/etc/资源管理.png)
+
+
+

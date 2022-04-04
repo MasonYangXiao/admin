@@ -63,13 +63,13 @@ springboot_thymeleaf_security_layuimini是基于springboot+layuimini整合开发
 
 # 演示截图
 
-![菜单管理](https://github.com/MasonYangXiao/admin/tree/master/etc/菜单管理.png)
+![菜单管理](https://www.dd518.com/images/菜单管理.png)
 
-![角色管理](https://github.com/MasonYangXiao/admin/tree/master/etc/角色管理.png)
+![角色管理](https://www.dd518.com/images/角色管理.png)
 
-![用户管理](https://github.com/MasonYangXiao/admin/tree/master/etc/用户管理.png)
+![用户管理](https://www.dd518.com/images/用户管理.png)
 
-![资源管理](https://github.com/MasonYangXiao/admin/tree/master/etc/资源管理.png)
+![资源管理](https://www.dd518.com/images/资源管理.png)
 
 
 
